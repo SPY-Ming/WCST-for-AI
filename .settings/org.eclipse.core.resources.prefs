@@ -1,6 +1,9 @@
 eclipse.preferences.version=1
 encoding//lstm/Strategy-lstm.py=utf-8
+encoding//lstm/Strategy-lstm_v2.py=utf-8
 encoding//lstm/data_process.py=utf-8
+encoding//lstm/data_process_v2.py=utf-8
+encoding//lstm/test_lstm.py=utf-8
 encoding//mlp/Load.py=utf-8
 encoding//mlp/MLPtest.py=utf-8
 encoding//mlp/check_train_data.py=utf-8

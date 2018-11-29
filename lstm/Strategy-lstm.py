@@ -5,26 +5,25 @@ import pandas as pd
 import numpy as np
 import pickle
 
+
+
+
 '''data process'''
-data = pickle.load(open('./data_3dim.pkl','rb'))
-train_set = data[:500]
-test_set = data[500:]
+step = 6
+data = pickle.load(open('./data_V2_6dim.pkl','rb'))
 
-x_train = np.array([t[1] for t in train_set])
-y_train = [t[0] for t in train_set]
-x_test = np.array([t[1] for t in test_set])
-y_test = [t[0] for t in test_set]
-
-
+split_num = int(len(data)*0.2)
+train_set = data
+test_set = random.sample(data,split_num)
+print('len of train set {} ; len of test set {}'.format(len(train_set),len(test_set)))
 
 epochs = 100
 n_classes = 3
 lr = 5e-3
 batch_size = 1
-hidden_size = 100
+hidden_size = 150
 batch_index=[]
-num_batch = len(x_train)
-step = 3
+num_batch = len(data)
 
 sess = tf.InteractiveSession()
 
@@ -36,7 +35,7 @@ def LSTM_model(inputs, hidden_size, batch_size):
         initial_state=state,
         dtype=tf.float32)
     return outputs
- 
+
 def train_lstm ():
     # build model
     input_x = tf.placeholder('float', [None, step, 2],name='input_x')
@@ -45,7 +44,7 @@ def train_lstm ():
     # LSTM Network
     with tf.variable_scope('lstm_layer'):
         output = LSTM_model(input_x,hidden_size,batch_size,)
-        output = tf.nn.dropout(output, 0.76)
+        output = tf.nn.dropout(output, 0.7)
         print('lstm output is ',output)
         output = output[:,-1,:]
         print('last output is ',output)
@@ -56,6 +55,7 @@ def train_lstm ():
             initializer=tf.contrib.layers.xavier_initializer())
         print("W shape ", W.get_shape())
         b = tf.get_variable("b", shape=[n_classes], initializer=tf.constant_initializer(0.1))
+        W = tf.nn.dropout(W,0.7)
     score = tf.add(tf.matmul(output,W),b)
     pred = tf.nn.softmax(score,1)
     loss = tf.reduce_mean(-tf.reduce_sum(input_y * tf.log(pred), reduction_indices=[1]))
@@ -74,20 +74,17 @@ def train_lstm ():
     brr=0
     tf.global_variables_initializer().run()
     for i in range(epochs):
-        for input_feature,input_label in zip(x_train,y_train):
-#             print(np.shape(input_feature[np.newaxis,:]))
-#             print(input_label)
-            print(type(input_feature))
-            optimizer.run({input_x:input_feature[np.newaxis,:],
-                           input_y:input_label[np.newaxis,:]})
+        for input_feature,input_label in train_set:
+            optimizer.run({input_x:[input_feature],
+                           input_y:[input_label]})
         acc = []
-        for xt,yt in zip(x_test,y_test):
-            acc.append(accuracy.eval({input_x:xt[np.newaxis,:],input_y:yt[np.newaxis,:]}))
+        for xt,yt in test_set:
+            acc.append(accuracy.eval({input_x:[xt],input_y:[yt]}))
         arr = np.mean(acc)
         if brr<arr:
            brr=arr
            b=i
-           saver.save(sess,"./model/lstm")
+           saver.save(sess,"./model/lstm_%idim_v1"%step)
            print('save max accuracy is {}'.format(brr))
         print('in epoch {} , accuracy is {}'.format(i,arr))
         

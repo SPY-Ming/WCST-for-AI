@@ -46,8 +46,8 @@ class Agent_wsct(object):
         self.graph_lstm = tf.Graph()
         self.sess_lstm = tf.InteractiveSession(graph=self.graph_lstm)
         with self.graph_lstm.as_default():
-            saver2 = tf.train.import_meta_graph("./lstm/model/lstm.meta")
-            saver2.restore(self.sess_lstm, "./lstm/model/lstm")
+            saver2 = tf.train.import_meta_graph("./lstm/model/lstm_6dim_v1.meta")
+            saver2.restore(self.sess_lstm, "./lstm/model/lstm_6dim_v1")
         #     lstm_x = mlp_graph.get_operation_by_name("input_x").outputs[0]
         #     lstm_y = mlp_graph.get_operation_by_name("input_y").outputs[0]
             self.lstm_x = tf.get_collection('input_x')[0]
@@ -55,7 +55,7 @@ class Agent_wsct(object):
             self.lstm_pred = tf.get_collection('pred')[0]
             
             if DEBUG:
-                data = pickle.load(open('./lstm/data_3dim.pkl','rb'))
+                data = pickle.load(open('./lstm/data_6dim.pkl','rb'))
                 train_set = data[:500]
                 test_set = data[500:]
                 
@@ -76,8 +76,9 @@ class Agent_wsct(object):
         situation.append(decision[0])
         action = self.sess_mlp.run(tf.argmax(self.mlp_pred,1),
                 feed_dict={self.mlp_x:[situation],self.keep_prob:1.0})
-        print('action (card choosed by agent) is ',action)
+#         print('action (card choosed by agent) is ',action)
         return action,decision
+    
     
 if __name__ == "__main__":
     ''' Unit test'''
@@ -98,9 +99,6 @@ if __name__ == "__main__":
         for i in range(2):
             decision_stack.append([0,0])
     #     print('initial state is ',decision_stack)
-        
-        
-        
         last_dec = 0
         last_judge = 0
         

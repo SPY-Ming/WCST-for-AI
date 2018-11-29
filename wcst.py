@@ -3,6 +3,7 @@ import sys
 import random
 import collections
 from agent import Agent_wsct
+import csv
 
 
 SCREEN_X = 1200
@@ -11,7 +12,7 @@ SCREEN_Y = 800
 Num = ['1','2','3','4']
 Color = ['red','green','blue','yellow']
 Shape = ['circle','square','triangle','star']
-RULE_DICT = {"shape":2,"color":1,"num":0}
+RULE_DICT = {"shape":2,"color":1,"num":0,"None":3}
 ACTION_SET = {0:(460,475),1:(640,475),2:(820,475),3:(1000,475)}
 f = open("sample.txt","w")
 
@@ -34,7 +35,7 @@ class game(object):
         # self.actions = {"choose1":[1,0,0,0],"choose2":[0,1,0,0],"choose3":[0,0,1,0],"choose4":[0,0,0,1]}
         pygame.display.set_caption('WCST')
         self.choose = None
-        self.result = 0
+        self.result = 3
         self.NOOP = pygame.K_F13
         self.last_action = []
         #设置4张底牌，随机变化
@@ -367,41 +368,9 @@ class game(object):
                 self.mouse_x = pos[0]
                 self.mouse_y = pos[1]
 
-    # def render(self,action):
-    #     if self.flag:
-    #         pygame.time.delay(500)
-    #         self.screen.blit(self.cover_img,(400,250))
-    #         self.screen.blit(self.cover_img,(760,250))
-    #         self.screen.blit(self.cover_img,(580,250))
-    #         self.screen.blit(self.cover_img,(940,250))
-    #         self.flag = 0
-    #     if action.index(max(action)) == 0:
-    #         self.flag = 1
-    #         img_x = 400+180*Num.index(self.Stim.num)
-    #         if self.rule == 'num':
-    #             self.screen.blit(self.correct_img,(img_x,250))
-    #         else:
-    #             self.screen.blit(self.wrong_img,(img_x,250))
-    #     elif action.index(max(action)) == 1:
-    #         self.flag = 1
-    #         img_x = 400+180*Color.index(self.Stim.color)
-    #         if self.rule == 'color':
-    #             self.screen.blit(self.correct_img,(img_x,250))
-    #         else:
-    #             self.screen.blit(self.wrong_img,(img_x,250))
-    #     else:
-    #         self.flag = 1
-    #         img_x = 400+180*Shape.index(self.Stim.shape)
-    #         if self.rule == 'shape':
-    #             self.screen.blit(self.correct_img,(img_x,250))
-    #         else:
-    #             self.screen.blit(self.wrong_img,(img_x,250))
-    #     self.screen.blit(self.Stim.image,(150,200))
-    #     pygame.display.update()
-
     def getState(self):
         import copy
-        state = list()
+        platform_state = list()
         card1_state = copy.deepcopy(self.Card1.state)
         card1_state.insert(0,1) 
         card2_state = copy.deepcopy(self.Card2.state)
@@ -412,12 +381,12 @@ class game(object):
         card4_state.insert(0,4)
         cardstim_state = copy.deepcopy(self.Stim.state)
         cardstim_state.insert(0,0)
-        state.extend(cardstim_state)
-        state.extend(card1_state)
-        state.extend(card2_state)
-        state.extend(card3_state)
-        state.extend(card4_state)
-        return state
+        platform_state.extend(cardstim_state)
+        platform_state.extend(card1_state)
+        platform_state.extend(card2_state)
+        platform_state.extend(card3_state)
+        platform_state.extend(card4_state)
+        return platform_state
 
     def reset(self):
         self.screen.fill((0,0,0))
@@ -489,17 +458,18 @@ class game(object):
     #                 if self.last_rule == 'shape':
     #                     self.per_error += 1
     #     self.Stim = Card(Num[random.randint(0,3)],Color[random.randint(0,3)],Shape[random.randint(0,3)])
-    #     return self.Stim.state, reward, self.Trial>60, [self.Correct,self.Wrong,self.per_error]
+    #     return self.Stim.platform_state, reward, self.Trial>60, [self.Correct,self.Wrong,self.per_error]
 
     def run(self):
         tmp = self.rule
         if self.flag:
-            pygame.time.delay(500)
+#             pygame.time.delay(500)
             self.screen.blit(self.cover_img,(400,250))
             self.screen.blit(self.cover_img,(760,250))
             self.screen.blit(self.cover_img,(580,250))
             self.screen.blit(self.cover_img,(940,250))
             self.flag = 0
+        self._handle_event()
         if self.n == 0:
             self.per_flag = 1
             self.n = 10
@@ -507,9 +477,9 @@ class game(object):
                 self.last_rule = self.rule
                 tmp = self.rules[random.randint(0,2)]
             self.rule = tmp
-        self._handle_event()
+        
         pygame.display.flip()
-        pygame.time.delay(50)
+#         pygame.time.delay(50)
 
     def show_results(self):
         self.screen.fill((0, 0, 0))
@@ -518,7 +488,7 @@ class game(object):
         textobj3 = self.font.render("Feedback on your WCST performance (in 60 trials)", 1, (255, 255, 255))
         textobj4 = self.font.render("Number of perseveration errors: " + str(self.per_error), 1, (255, 255, 255))
         textobj5 = self.font.render("Number of non-perseveration errors: " + str(self.Wrong - self.per_error), 1,
-                                    (255, 255, 255))
+                                    (255, 255, 255)) 
         textobj6 = self.font.render("[" + str(format((self.per_error / 60)*100,"0.2f")) +"%" +"]", 1, (255, 255, 255))
         textobj7 = self.font.render("[" + str(format(((self.Wrong - self.per_error)/60)*100,"0.2f")) +"%" +"]", 1, (255, 255, 255))
         self.screen.blit(textobj1, (350, 200))
@@ -539,31 +509,77 @@ class game(object):
         else:
             return False
 
+def Static_results():
+    f_static_res = open('./results/term_static.csv','w',newline='')
+    csv_write_res = csv.writer(f_static_res,dialect = 'excel')
+    for i in range(20):
+        g = game()
+        agent = Agent_wsct()
+        last_dec = 0
+        decision_stack = collections.deque(maxlen=6)
+    #     f_static = open('./results/term1.txt','w')
+    #     f_static.write('plantform_state \t plantform_rule \t plantform_label \t agnet_decision \t agnent_action\n')
+        f_static = open('./results/term_%d_detail.csv'%i,'w',newline='')
+        csv_write = csv.writer(f_static,dialect = 'excel')
+        print('plantform_state \t plantform_rule \t plantform_label \t agnet_decision \t agnent_action\n')
+        csv_write.writerow(['plantform_state','plantform_rule','plantform_label','agnet_decision','agnent_action'])
+        for i in range(2):
+            decision_stack.append([0,0])
+        while not g.game_over():
+            g.run()
+            platform_state = g.getState() #获得当前平台的态势(五张牌，每张牌由4个特征表示)
+            last_round_result = g.result #获得上一轮做出decision后，选择的牌是否正确
+    #         print(platform_state,last_round_result)
+            platform_current_rule = RULE_DICT[g.rule] # 获得平台当前时刻的规则
+            platform_current_card = g.Stim.state[RULE_DICT[g.rule]] # 获得平台当前应当选择哪一个卡牌
+            
+            decision_stack.append([last_dec,last_round_result])
+            print('current decision_stack ',decision_stack) 
+            action,decision= agent.run(situation=platform_state,previous_decision = decision_stack)
+    #         f_static.write(res)
+            csv_write.writerow([platform_state,platform_current_rule,platform_current_card,
+                                                      decision[0], action[0]])
+            # action为根据当前态势及策略选择的卡牌；decision为基于前N轮决策及决策的正确与否预测出这轮的策略
+            last_dec = decision[0]
+            action_set = [0,0,0,0]
+            action_set [action[0]]= 1
+            g.act(action_set)
+        one_term_res = [g.Correct,g.Wrong,g.per_error,g.Wrong-g.per_error,g.per_error/60*100,(g.Wrong-g.per_error)/60*100]
+        csv_write_res.writerow(one_term_res)
+        f_static.close()
+    f_static_res.close()
+
+
+
 if __name__=="__main__":
     g = game()
     agent = Agent_wsct()
-    last_dec = 0
-    decision_stack = collections.deque(maxlen=3)
-    for i in range(2):
-        decision_stack.append([0,0])
+    step = 6
+    decision_stack = collections.deque(maxlen=step)
+    f_static = open('./results/V4_detail_step%d.csv'%step,'w',newline='')
+    csv_write = csv.writer(f_static,dialect = 'excel')
+    csv_write.writerow(['plantform_state','plantform_rule','plantform_label','agnet_decision','agnent_action'])
+    for i in range(step):
+        decision_stack.append([3,3])
     while not g.game_over():
         g.run()
-        state = g.getState()
-        result = g.result
-        print(state,result)
-        print(RULE_DICT[g.rule])
-        print(g.Stim.state[RULE_DICT[g.rule]])
-        decision_stack.append([last_dec,result])
-        print('current decision_stack ',decision_stack)
-        action,decision= agent.run(situation=state,previous_decision = decision_stack)
+        platform_state = g.getState() #获得当前平台的态势(五张牌，每张牌由4个特征表示)
+        last_round_result = g.result #获得上一轮做出decision后，选择的牌是否正确
+        platform_current_rule = RULE_DICT[g.rule] # 获得平台当前时刻的规则
+        platform_current_card = g.Stim.state[RULE_DICT[g.rule]] # 获得平台当前应当选择哪一个卡牌
         
-#         print(action[0])
+        action,decision= agent.run(situation=platform_state,previous_decision = decision_stack)
+        csv_write.writerow([platform_state,platform_current_rule,platform_current_card,
+                                                  decision[0], action[0]])
+        # action为根据当前态势及策略选择的卡牌；decision为基于前N轮决策及决策的正确与否预测出这轮的策略
         last_dec = decision[0]
-        
-        # output = Agnet.act()
         action_set = [0,0,0,0]
         action_set [action[0]]= 1
         g.act(action_set)
-
-
+        if decision[0] == platform_current_rule:
+            decision_stack.append([decision[0],1])
+        else:
+            decision_stack.append([decision[0],0])
+        print('end of term,decision stack is ',decision_stack)
+    f_static.close()
 
