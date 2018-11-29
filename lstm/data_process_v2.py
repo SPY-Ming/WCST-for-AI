@@ -598,20 +598,20 @@ def generate_data_make_rule():
         dataset.append([every_sample, 2])
         
     # 随机选择数据，并生成数据集
-    f = open('./data_V2_6dim.pkl','wb')
-    print('number of sample in dataset is ',len(dataset))
-    random.shuffle(dataset)
-    one_hot_dict = {
-        0:[1,0,0],
-        1:[0,1,0],
-        2:[0,0,1]
-        }
-    for d in dataset:
-        print(d[1])
-        d[1] = one_hot_dict[d[1]]
-        print(d[1],np.argmax(d[1], 0))
-        
-    pickle.dump(dataset,f,-1)
+#     f = open('./data_V2_6dim.pkl','wb')
+#     print('number of sample in dataset is ',len(dataset))
+#     random.shuffle(dataset)
+#     one_hot_dict = {
+#         0:[1,0,0],
+#         1:[0,1,0],
+#         2:[0,0,1]
+#         }
+#     for d in dataset:
+#         print(d[1])
+#         d[1] = one_hot_dict[d[1]]
+#         print(d[1],np.argmax(d[1], 0))
+#         
+#     pickle.dump(dataset,f,-1)
     f.close()
 
     return dataset

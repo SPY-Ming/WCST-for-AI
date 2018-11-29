@@ -553,7 +553,7 @@ def Static_results():
 
 if __name__=="__main__":
     g = game()
-    agent = Agent_wsct()
+    agent = Agent_wsct(mlp_path = "./mlp/model/model1",lstm_path = './lstm/model/lstm_6dim_v1')
     step = 6
     decision_stack = collections.deque(maxlen=step)
     f_static = open('./results/V4_detail_step%d.csv'%step,'w',newline='')

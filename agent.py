@@ -14,13 +14,16 @@ DEBUG = 0
 
 
 class Agent_wsct(object):
-    def __init__(self):
+    def __init__(self,mlp_path,lstm_path):
         print('load Operation Net')
         self.mlp_graph = tf.Graph()
         self.sess_mlp = tf.InteractiveSession(graph=self.mlp_graph)
+        self.mlp_path = mlp_path
+        self.lstm_path = lstm_path
         with self.mlp_graph.as_default():
-            saver1 = tf.train.import_meta_graph("./mlp/model/model1.meta")
-            saver1.restore(self.sess_mlp, "./mlp/model/model1")
+            # "./mlp/model/model1"
+            saver1 = tf.train.import_meta_graph("{}.meta".format(self.mlp_path))
+            saver1.restore(self.sess_mlp, self.mlp_path)
             self.mlp_x = self.mlp_graph.get_operation_by_name("Input_Data").outputs[0]
             self.mlp_y = self.mlp_graph.get_operation_by_name("Label").outputs[0]
             self.keep_prob = self.mlp_graph.get_operation_by_name("dropout_rate").outputs[0]
@@ -46,8 +49,9 @@ class Agent_wsct(object):
         self.graph_lstm = tf.Graph()
         self.sess_lstm = tf.InteractiveSession(graph=self.graph_lstm)
         with self.graph_lstm.as_default():
-            saver2 = tf.train.import_meta_graph("./lstm/model/lstm_6dim_v1.meta")
-            saver2.restore(self.sess_lstm, "./lstm/model/lstm_6dim_v1")
+            # ./lstm/model/lstm_6dim_v1
+            saver2 = tf.train.import_meta_graph("{}.meta".format(self.lstm_path))
+            saver2.restore(self.sess_lstm, self.lstm_path)
         #     lstm_x = mlp_graph.get_operation_by_name("input_x").outputs[0]
         #     lstm_y = mlp_graph.get_operation_by_name("input_y").outputs[0]
             self.lstm_x = tf.get_collection('input_x')[0]
@@ -82,7 +86,7 @@ class Agent_wsct(object):
     
 if __name__ == "__main__":
     ''' Unit test'''
-    a = Agent_wsct()
+    a = Agent_wsct("./mlp/model/model1",'./lstm/model/lstm_6dim_v1')
     
     if DEBUG:
         np.set_printoptions(threshold=np.inf)
@@ -114,12 +118,6 @@ if __name__ == "__main__":
             last_dec = decision[0]
             last_judge = random.randint(0,1)
             i += 1
-        
-    
-    
-    
-#     
-# 
 # for i in range(4):
 #     a.append(i)
 #     print( a)
